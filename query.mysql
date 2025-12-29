@@ -1,0 +1,33 @@
+-- 1️⃣ Create table
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    customer_id INT,
+    purchase_date DATE,
+    amount INT
+);
+
+-- 2️⃣ Insert sample data
+INSERT INTO transactions (customer_id, purchase_date, amount) VALUES
+(101, '2025-01-01', 100),
+(101, '2025-01-15', 200),
+(101, '2025-02-01', 300),
+(102, '2025-01-05', 150),
+(102, '2025-02-05', 250),
+(103, '2025-01-01', 120),
+(103, '2025-01-08', 180),
+(103, '2025-01-15', 220);
+
+-- 3️⃣ Calculate average days between purchases per customer
+WITH diffs AS (
+  SELECT 
+    customer_id,
+    purchase_date,
+    LAG(purchase_date) OVER (PARTITION BY customer_id ORDER BY purchase_date) AS prev
+  FROM transactions
+)
+SELECT 
+  customer_id,
+  ROUND(AVG(purchase_date - prev), 2) AS avg_gap_days
+FROM diffs
+WHERE prev IS NOT NULL
+GROUP BY customer_id;
